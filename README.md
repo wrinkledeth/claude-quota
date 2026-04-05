@@ -17,6 +17,7 @@ python claude_quota.py
 ```hbash
 alias cq='cd /repo_dir/claude-quota && .venv/bin/python claude_quota.py'
 ```
-### Note
-If you run into Claude asking if you trust the folder, just run `claude` first from within that directory and tell it to trust the folder.
+### Notes
+- Refreshes every 60s
+- If you run into Claude asking if you trust the folder, just run `claude` first from within that directory and tell it to trust the folder.
 
