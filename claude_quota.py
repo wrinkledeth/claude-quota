@@ -177,8 +177,8 @@ def clear_screen():
 def main():
     parser = argparse.ArgumentParser(description="Auto-refreshing Claude usage display")
     parser.add_argument(
-        "-n", "--interval", type=int, default=60,
-        help="Refresh interval in seconds (default: 60)",
+        "-n", "--interval", type=int, default=300,
+        help="Refresh interval in seconds (default: 300)",
     )
     parser.add_argument(
         "--once", action="store_true", help="Run once and exit",
