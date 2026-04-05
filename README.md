@@ -2,7 +2,8 @@
 
 A simple wrapper for the cli command "claude /usage"
 
-![](image.png)
+Appearance: 
+![](image-1.png)
 
 Usage:
 ```bash
@@ -11,7 +12,7 @@ pip install -r requirements.txt
 python claude_quota.py
 ```
 
-Same alias:
+Sample alias:
 ```bash
 alias cq='cd /repo_dir/claude-quota && .venv/bin/python claude_quota.py'
 ```
