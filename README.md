@@ -18,5 +18,5 @@ python claude_quota.py
 alias cq='cd /repo_dir/claude-quota && .venv/bin/python claude_quota.py'
 ```
 ### Note
-If you run into claude asking if you turst the folder, just run claude first from within that directory and tell it to trust the folder.
+If you run into Claude asking if you trust the folder, just run `claude` first from within that directory and tell it to trust the folder.
 
