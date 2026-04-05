@@ -2,21 +2,21 @@
 
 A simple wrapper for the cli command `claude /usage`
 
-## Appearance 
+### Appearance 
 
 ![](image-1.png)
 
-## Usage
+### Usage
 ```bash
 # activate venv
 pip install -r requirements.txt
 python claude_quota.py
 ```
 
-## Sample alias
+### Sample alias
 ```hbash
 alias cq='cd /repo_dir/claude-quota && .venv/bin/python claude_quota.py'
 ```
-## Note
+### Note
 If you run into claude asking if you turst the folder, just run claude first from within that directory and tell it to trust the folder.
 
