@@ -1,0 +1,8 @@
+greenlet==3.3.2
+pexpect==4.9.0
+playwright==1.58.0
+ptyprocess==0.7.0
+pyee==13.0.1
+pyte==0.8.2
+typing_extensions==4.15.0
+wcwidth==0.6.0
