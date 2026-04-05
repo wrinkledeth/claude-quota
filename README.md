@@ -1,6 +1,6 @@
 # Claude Quota CLI Tool
 
-A simple wrapper for the cli command "claude /usage"
+A simple wrapper for the cli command `claude /usage`
 
 Appearance: 
 ![](image-1.png)
