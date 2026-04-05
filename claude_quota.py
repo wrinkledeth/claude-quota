@@ -126,8 +126,11 @@ def get_usage():
                           dimensions=(ROWS, COLS))
     child.logfile_read = log
 
-    # Wait for the input prompt
-    child.expect(r"❯|>", timeout=15)
+    # Handle optional "trust this folder" prompt before the input prompt
+    index = child.expect([r"Yes, I trust this folder", r"❯|>"], timeout=15)
+    if index == 0:
+        child.send("1\r")
+        child.expect(r"❯|>", timeout=15)
     time.sleep(1)
 
     # Type /usage and press Enter
