@@ -31,50 +31,59 @@ def render_screen(raw_text):
 
 
 BAR_WIDTH = 50
-# Dim/dark color for unused portion (ANSI 256-color dark gray)
-DIM = "\033[38;5;238m"
-BOLD = "\033[1m"
-LIGHT = "\033[38;5;250m"
-RESET = "\033[0m"
 BLOCK_FULL = "█"
 BLOCK_CHARS = set("█▉▊▋▌▍▎▏▐▛▜▝▞▟▗▖▘▙▚▀▄▌▐")
 
+# Rosé Pine palette (truecolor)
+def _fg(r, g, b):
+    return f"\033[38;2;{r};{g};{b}m"
+
+RESET   = "\033[0m"
+BOLD    = "\033[1m"
+RP_LOVE = _fg(235, 111, 146)   # #eb6f92 — session bar
+RP_IRIS = _fg(196, 167, 231)   # #c4a7e7 — week bar
+RP_GOLD = _fg(246, 193, 119)   # #f6c177 — extra usage bar
+RP_FOAM = _fg(156, 207, 216)   # #9ccfd8 — headers
+RP_TEXT = _fg(224, 222, 244)    # #e0def4 — main text
+RP_MUTED = _fg(110, 106, 134)  # #6e6a86 — dim/unfilled bar
+RP_SUBTLE = _fg(144, 140, 170) # #908caa — secondary text (resets, timestamps)
+BAR_COLORS = [RP_LOVE, RP_IRIS, RP_GOLD]
+
 
 def colorize_bars(text):
-    """Re-render usage bar lines with a dim-colored unused portion."""
+    """Re-render usage bar lines with Rosé Pine themed colors."""
     lines = text.split("\n")
     result = []
+    bar_index = 0
     for line in lines:
         # Detect lines that contain block characters and "% used"
         if "% used" in line:
             match = re.match(r"^(.*?)(([█▉▊▋▌▍▎▏▐▛▜▝▞▟▗▖▘▙▚▀▄▌▐\s]*[█▉▊▋▌▍▎▏▐▛▜▝▞▟▗▖▘▙▚▀▄▌▐]+))\s+(\d+% used)$", line)
             if match:
-                prefix = match.group(1)
-                bar = match.group(2)
                 pct_text = match.group(4)
                 pct = int(re.search(r"(\d+)", pct_text).group(1))
+                bar_color = BAR_COLORS[bar_index % len(BAR_COLORS)]
+                bar_index += 1
 
-                # Build a new bar with colored unused portion
                 filled = round(BAR_WIDTH * pct / 100)
                 unfilled = BAR_WIDTH - filled
-                new_bar = BLOCK_FULL * filled + DIM + BLOCK_FULL * unfilled + RESET
-                result.append(f"  {new_bar}  {LIGHT}{pct_text}{RESET}")
+                new_bar = bar_color + BLOCK_FULL * filled + RP_MUTED + BLOCK_FULL * unfilled + RESET
+                result.append(f"  {new_bar}  {RP_TEXT}{pct_text}{RESET}")
                 continue
         # Also handle a bare bar line (no "% used" on the same line)
         if any(c in line for c in "█▉▊▋▌") and "% used" not in line and "Resets" not in line:
-            # Skip standalone bar lines since we rebuild them above
             has_block = sum(1 for c in line if c in BLOCK_CHARS)
             if has_block > 5:
                 continue
         # Bold section headers
-        if "Current session" in line or "Current week" in line:
-            result.append(f"  {BOLD}{line}{RESET}")
+        if "Current session" in line or "Current week" in line or "Extra usage" in line:
+            result.append(f"  {BOLD}{RP_FOAM}{line}{RESET}")
             continue
-        # Dim the "Resets" lines
-        if "Resets" in line:
-            result.append(f"  {LIGHT}{line}{RESET}")
+        # Dim the "Resets" / spend lines
+        if "Resets" in line or "spent" in line:
+            result.append(f"  {RP_SUBTLE}{line}{RESET}")
             continue
-        result.append(f"  {line}")
+        result.append(f"  {RP_TEXT}{line}{RESET}")
     return "\n".join(result)
 
 
@@ -100,7 +109,7 @@ def extract_usage(text):
             result.append(stripped)
             if "Resets" in stripped:
                 resets_count += 1
-                if resets_count >= 2:
+                if resets_count >= 3:
                     break
 
     if not result:
@@ -193,7 +202,7 @@ def main():
             print()
             print(output)
             now = datetime.now().strftime("%I:%M:%S %p")
-            print(f"\n  {LIGHT}Last updated: {now}{RESET}")
+            print(f"\n  {RP_SUBTLE}Last updated: {now}{RESET}")
             if args.once:
                 break
             time.sleep(args.interval)
