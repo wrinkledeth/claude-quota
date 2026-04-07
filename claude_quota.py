@@ -40,14 +40,15 @@ def _fg(r, g, b):
 
 RESET   = "\033[0m"
 BOLD    = "\033[1m"
-RP_LOVE = _fg(235, 111, 146)   # #eb6f92 — session bar
-RP_IRIS = _fg(196, 167, 231)   # #c4a7e7 — week bar
-RP_GOLD = _fg(246, 193, 119)   # #f6c177 — extra usage bar
-RP_FOAM = _fg(156, 207, 216)   # #9ccfd8 — headers
-RP_TEXT = _fg(224, 222, 244)    # #e0def4 — main text
-RP_MUTED = _fg(110, 106, 134)  # #6e6a86 — dim/unfilled bar
-RP_SUBTLE = _fg(144, 140, 170) # #908caa — secondary text (resets, timestamps)
-BAR_COLORS = [RP_LOVE, RP_IRIS, RP_GOLD]
+RP_RED    = _fg(180, 99, 122)   # #b4637a — session bar
+RP_YELLOW = _fg(234, 157, 52)   # #ea9d34 — week bar
+RP_GREEN  = _fg(40, 105, 131)   # #286983 — extra usage bar
+RP_ACCENT = _fg(86, 148, 159)   # #56949f — bold headings
+RP_TEXT   = _fg(87, 82, 121)    # #575279 — bright foreground / main text
+RP_FG     = _fg(144, 140, 170)  # #908caa — secondary text (resets, timestamps)
+RP_MUTED  = _fg(110, 106, 134)  # #6e6a86 — dim/unfilled bar
+RP_BAR_TEXT = _fg(224, 222, 244) # #e0def4 — % used text
+BAR_COLORS = [RP_RED, RP_YELLOW, RP_GREEN]
 
 
 def colorize_bars(text):
@@ -68,7 +69,7 @@ def colorize_bars(text):
                 filled = round(BAR_WIDTH * pct / 100)
                 unfilled = BAR_WIDTH - filled
                 new_bar = bar_color + BLOCK_FULL * filled + RP_MUTED + BLOCK_FULL * unfilled + RESET
-                result.append(f"  {new_bar}  {RP_TEXT}{pct_text}{RESET}")
+                result.append(f"  {new_bar}  {RP_BAR_TEXT}{pct_text}{RESET}")
                 continue
         # Also handle a bare bar line (no "% used" on the same line)
         if any(c in line for c in "█▉▊▋▌") and "% used" not in line and "Resets" not in line:
@@ -77,11 +78,11 @@ def colorize_bars(text):
                 continue
         # Bold section headers
         if "Current session" in line or "Current week" in line or "Extra usage" in line:
-            result.append(f"  {BOLD}{RP_FOAM}{line}{RESET}")
+            result.append(f"  {BOLD}{RP_ACCENT}{line}{RESET}")
             continue
         # Dim the "Resets" / spend lines
         if "Resets" in line or "spent" in line:
-            result.append(f"  {RP_SUBTLE}{line}{RESET}")
+            result.append(f"  {RP_FG}{line}{RESET}")
             continue
         result.append(f"  {RP_TEXT}{line}{RESET}")
     return "\n".join(result)
@@ -179,8 +180,32 @@ def get_usage():
     return re.sub(r"\n{3,}", "\n\n", text).strip()
 
 
+def enter_alt_screen():
+    sys.stdout.write("\033[?1049h\033[?25l")
+    sys.stdout.flush()
+
+
+def exit_alt_screen():
+    sys.stdout.write("\033[?25h\033[?1049l")
+    sys.stdout.flush()
+
+
 def clear_screen():
-    os.system("cls" if os.name == "nt" else "clear")
+    sys.stdout.write("\033[H\033[2J")
+    sys.stdout.flush()
+
+
+def display_centered(output):
+    term_height = shutil.get_terminal_size().lines
+    content_lines = output.split("\n")
+    total_lines = len(content_lines) + 2  # +2 for timestamp + blank line
+    top_pad = max(1, (term_height - total_lines) // 2) if total_lines < term_height else 1
+    clear_screen()
+    sys.stdout.write("\n" * top_pad)
+    sys.stdout.write(output + "\n")
+    now = datetime.now().strftime("%I:%M:%S %p")
+    sys.stdout.write(f"\n  {RP_FG}Last updated: {now}{RESET}\n")
+    sys.stdout.flush()
 
 
 def main():
@@ -194,23 +219,22 @@ def main():
     )
     args = parser.parse_args()
 
+    enter_alt_screen()
     try:
         while True:
             output = get_usage()
-            clear_screen()
-            print()
-            print()
-            print(output)
-            now = datetime.now().strftime("%I:%M:%S %p")
-            print(f"\n  {RP_SUBTLE}Last updated: {now}{RESET}")
+            display_centered(output)
             if args.once:
                 break
             time.sleep(args.interval)
     except KeyboardInterrupt:
-        print("\nBye!")
+        pass
     except pexpect.exceptions.TIMEOUT:
+        exit_alt_screen()
         print("Error: claude command timed out", file=sys.stderr)
         sys.exit(1)
+    finally:
+        exit_alt_screen()
 
 
 if __name__ == "__main__":
